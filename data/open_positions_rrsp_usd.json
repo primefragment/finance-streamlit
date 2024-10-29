@@ -1,0 +1,36 @@
+{
+    "2024-10-25": [
+        {
+            "ticker": "AMD",
+            "NumShares": 59,
+            "AveragePrice": 161.38
+        },
+        {
+            "ticker": "NVDA",
+            "NumShares": 61,
+            "AveragePrice": 121.98
+        },
+        {
+            "ticker": "SMCI",
+            "NumShares": 230,
+            "AveragePrice": 62.74
+        }
+    ],
+    "2024-10-28": [
+        {
+            "ticker": "AMD",
+            "NumShares": 59,
+            "AveragePrice": 161.38
+        },
+        {
+            "ticker": "NVDA",
+            "NumShares": 61,
+            "AveragePrice": 121.98
+        },
+        {
+            "ticker": "SMCI",
+            "NumShares": 230,
+            "AveragePrice": 62.74
+        }
+    ]
+}
