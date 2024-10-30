@@ -49,15 +49,17 @@ class NVDABacktest:
         nvda['MACD_Signal'] = macdsignal
         nvda['MACD_Hist'] = macdhist
         
+        print(nvda)
+
         return nvda
     
     def check_entry_conditions(self, row, prev_row):
         """Check if entry conditions are met"""
         conditions = [
-            row['Close'] > row['EMA20'],  # Price above 20 EMA
-            row['RSI'] < 30,  # Oversold condition
-            row['MACD_Hist'] > prev_row['MACD_Hist'],  # Positive MACD momentum
-            row['Volume'] > prev_row['Volume'] * 1.1  # Volume increase
+            # row['Close'] > row['EMA20'],  # Price above 20 EMA
+            (row['RSI'] < 30).all(),  # Oversold condition
+            (row['MACD_Hist'] > prev_row['MACD_Hist']).all(),  # Positive MACD momentum
+            (row['Volume'] > prev_row['Volume'] * 1.1).all()  # Volume increase
         ]
         return all(conditions)
     
@@ -88,7 +90,7 @@ class NVDABacktest:
                 gain = (current_row['Close'] - entry_price) / entry_price
                 
                 # Exit conditions with trailing stop
-                if gain >= 0.10:  # Target reached
+                if gain.item() >= 0.10:  # Target reached
                     self.capital += self.positions * current_row['Close']
                     self.trades[-1].update({
                         'exit_price': current_row['Close'],
@@ -97,7 +99,7 @@ class NVDABacktest:
                         'reason': 'target'
                     })
                     self.positions = 0
-                elif gain <= -0.05:  # Stop loss hit
+                elif gain.item() <= -0.05:  # Stop loss hit
                     self.capital += self.positions * current_row['Close']
                     self.trades[-1].update({
                         'exit_price': current_row['Close'],
@@ -125,21 +127,21 @@ class NVDABacktest:
             return "No trades executed"
             
         total_trades = len(self.trades)
-        winning_trades = len([t for t in self.trades if t.get('gain', 0) > 0])
-        losing_trades = len([t for t in self.trades if t.get('gain', 0) <= 0])
+        winning_trades = len([t for t in self.trades if (t.get('gain', 0) > 0).bool()])
+        losing_trades = len([t for t in self.trades if (t.get('gain', 0) <= 0).bool()])
         
         if total_trades > 0:
             win_rate = winning_trades / total_trades
             gains = [t.get('gain', 0) for t in self.trades]
             avg_gain = np.mean(gains)
-            max_drawdown = self.calculate_max_drawdown()
+            # max_drawdown = self.calculate_max_drawdown()
             
             final_equity = self.equity_curve[-1]
             total_return = (final_equity - self.initial_capital) / self.initial_capital
             
             # Calculate additional metrics
-            avg_winner = np.mean([g for g in gains if g > 0]) if winning_trades > 0 else 0
-            avg_loser = np.mean([g for g in gains if g <= 0]) if losing_trades > 0 else 0
+            avg_winner = np.mean([g for g in gains if (g > 0).bool()]) if winning_trades > 0 else 0
+            avg_loser = np.mean([g for g in gains if (g <= 0).bool()]) if losing_trades > 0 else 0
             
             return {
                 'Total Trades': total_trades,
@@ -149,9 +151,9 @@ class NVDABacktest:
                 'Average Gain': f"{avg_gain:.2%}",
                 'Average Winner': f"{avg_winner:.2%}",
                 'Average Loser': f"{avg_loser:.2%}",
-                'Max Drawdown': f"{max_drawdown:.2%}",
-                'Total Return': f"{total_return:.2%}",
-                'Final Equity': f"${final_equity:,.2f}"
+                # 'Max Drawdown': f"{max_drawdown:.2%}",
+                # 'Total Return': f"{total_return:.2%}",
+                # 'Final Equity': f"${final_equity:,.2f}"
             }
     
     def calculate_max_drawdown(self):
